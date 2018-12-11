@@ -51,6 +51,9 @@ const publicUrl = publicPath.slice(0, -1);
 // Get environment variables to inject into our app.
 const env = getClientEnvironment(publicUrl);
 
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
+
 // Assert this just to be safe.
 // Development builds of React are slow and not intended for production.
 if (env.stringified['process.env'].NODE_ENV !== '"production"') {
@@ -112,6 +115,11 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
   }
   return loaders;
 };
+
+let presetEnvOption = {
+  "modules": false,
+  "useBuiltIns": "usage",
+}
 
 // This is the production configuration.
 // It compiles slowly and is focused on producing a fast and minimal bundle.
@@ -310,24 +318,34 @@ module.exports = {
             loader: require.resolve('babel-loader'),
             options: {
               customize: require.resolve(
-                'babel-preset-react-app/webpack-overrides'
+                'babel-preset-react-app-wy/webpack-overrides'
               ),
               // @remove-on-eject-begin
-              babelrc: false,
-              configFile: false,
-              presets: [require.resolve('babel-preset-react-app')],
-              // Make sure we have a unique cache identifier, erring on the
-              // side of caution.
-              // We remove this when the user ejects because the default
-              // is sane and uses Babel options. Instead of options, we use
-              // the react-scripts and babel-preset-react-app versions.
-              cacheIdentifier: getCacheIdentifier('production', [
-                'babel-plugin-named-asset-import',
-                'babel-preset-react-app',
-                'react-dev-utils',
-                'react-scripts',
-              ]),
+              // babelrc: false,
+              // configFile: false,
+              // // presets: [require.resolve('babel-preset-react-app')],
+              // // Make sure we have a unique cache identifier, erring on the
+              // // side of caution.
+              // // We remove this when the user ejects because the default
+              // // is sane and uses Babel options. Instead of options, we use
+              // // the react-scripts and babel-preset-react-app versions.
+              // cacheIdentifier: getCacheIdentifier('production', [
+              //   'babel-plugin-named-asset-import',
+              //   'babel-preset-react-app',
+              //   'react-dev-utils',
+              //   'react-scripts',
+              // ]),
               // @remove-on-eject-end
+              presets: [[
+                "@babel/preset-env",
+                presetEnvOption
+              ],[
+                "react-app-wy",
+                {
+                  regenerator: false,
+                  "absoluteRuntime": false,
+                }
+              ]],
               plugins: [
                 [
                   require.resolve('babel-plugin-named-asset-import'),
@@ -358,7 +376,7 @@ module.exports = {
               compact: false,
               presets: [
                 [
-                  require.resolve('babel-preset-react-app/dependencies'),
+                  require.resolve('babel-preset-react-app-wy/dependencies'),
                   { helpers: true },
                 ],
               ],
@@ -366,12 +384,12 @@ module.exports = {
               // Save disk space when time isn't as important
               cacheCompression: true,
               // @remove-on-eject-begin
-              cacheIdentifier: getCacheIdentifier('production', [
-                'babel-plugin-named-asset-import',
-                'babel-preset-react-app',
-                'react-dev-utils',
-                'react-scripts',
-              ]),
+              // cacheIdentifier: getCacheIdentifier('production', [
+              //   'babel-plugin-named-asset-import',
+              //   'babel-preset-react-app',
+              //   'react-dev-utils',
+              //   'react-scripts',
+              // ]),
               // @remove-on-eject-end
               // If an error happens in a package, it's possible to be
               // because it was compiled. Thus, we don't want the browser
@@ -563,6 +581,10 @@ module.exports = {
         watch: paths.appSrc,
         silent: true,
         formatter: typescriptFormatter,
+      }),
+
+      new BundleAnalyzerPlugin({
+        // analyzerPort: isModernBuild ? '8888' : '9999'
       }),
   ].filter(Boolean),
   // Some libraries import Node modules but don't use them in the browser.

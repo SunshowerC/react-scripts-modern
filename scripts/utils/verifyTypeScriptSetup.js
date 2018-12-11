@@ -100,6 +100,10 @@ function verifyTypeScriptSetup() {
     strict: { suggested: true },
     forceConsistentCasingInFileNames: { suggested: true },
 
+    lib: { 
+      suggested: ["esnext", "dom", "dom.iterable", "scripthost"]
+    },
+
     // These values are required and cannot be changed by the user
     // Keep this in sync with the webpack config
     module: {

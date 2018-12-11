@@ -44,7 +44,6 @@
     "babel-jest": "23.6.0",
     "babel-loader": "8.0.4",
     "babel-plugin-named-asset-import": "^0.2.3",
-    "babel-preset-react-app": "^6.1.0",
     "bfj": "6.1.1",
     "case-sensitive-paths-webpack-plugin": "2.1.2",
     "chalk": "2.4.1",
@@ -89,8 +88,10 @@
   "deprecated": false,
   "description": "Configuration and scripts for Create React App.",
   "devDependencies": {
+    "babel-preset-react-app-wy": "^6.1.2",
     "react": "^16.3.2",
-    "react-dom": "^16.3.2"
+    "react-dom": "^16.3.2",
+    "webpack-bundle-analyzer": "^3.0.3"
   },
   "engines": {
     "node": ">=6"
