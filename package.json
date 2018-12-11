@@ -89,6 +89,8 @@
   "description": "Configuration and scripts for Create React App.",
   "devDependencies": {
     "babel-preset-react-app-wy": "^6.1.2",
+    "less": "^3.9.0",
+    "less-loader": "^4.1.0",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "webpack-bundle-analyzer": "^3.0.3"

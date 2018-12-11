@@ -23,7 +23,7 @@ const ManifestPlugin = require('webpack-manifest-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
-const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
+// const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
@@ -32,6 +32,12 @@ const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
 // @remove-on-eject-begin
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 // @remove-on-eject-end
+
+// 是不是 本地构建分析
+const isBuddleAnalysis = process.argv.some(item => item === '--analysis')
+// 是不是 Modern build
+const isModernBuild = process.argv.some(item => item === '--modern')
+
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -68,6 +74,11 @@ const cssRegex = /\.css$/;
 const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
+const lessRegex = /\.(less)$/
+const lessModuleRegex = /\.module\.less$/;
+
+const localIdentName = '[name]_[local]_[hash:base64:5]'
+
 
 // common function to get style loaders
 const getStyleLoaders = (cssOptions, preProcessor) => {
@@ -116,7 +127,13 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
   return loaders;
 };
 
-let presetEnvOption = {
+
+let presetEnvOption = isModernBuild ? {
+  targets: {
+    esmodules: true,
+  },
+  "modules": false,
+} : {
   "modules": false,
   "useBuiltIns": "usage",
 }
@@ -424,7 +441,8 @@ module.exports = {
               importLoaders: 1,
               sourceMap: shouldUseSourceMap,
               modules: true,
-              getLocalIdent: getCSSModuleLocalIdent,
+              // getLocalIdent: getCSSModuleLocalIdent,
+              localIdentName,
             }),
           },
           // Opt-in support for SASS. The logic here is somewhat similar
@@ -457,9 +475,36 @@ module.exports = {
                 importLoaders: 2,
                 sourceMap: shouldUseSourceMap,
                 modules: true,
-                getLocalIdent: getCSSModuleLocalIdent,
+                // getLocalIdent: getCSSModuleLocalIdent,
+                localIdentName,
               },
               'sass-loader'
+            ),
+          },
+
+          {
+            test: lessRegex,
+            exclude: lessModuleRegex,
+            loader: getStyleLoaders(
+              {
+                importLoaders: 2,
+                sourceMap: shouldUseSourceMap,
+
+              },
+              'less-loader'
+            ),
+          },
+
+          {
+            test: lessModuleRegex,
+            loader: getStyleLoaders(
+              {
+                importLoaders: 2,
+                sourceMap: shouldUseSourceMap,
+                modules: true,
+                localIdentName,
+              },
+              'less-loader'
             ),
           },
           // "file" loader makes sure assets end up in the `build` folder.
@@ -583,7 +628,7 @@ module.exports = {
         formatter: typescriptFormatter,
       }),
 
-      new BundleAnalyzerPlugin({
+      isBuddleAnalysis && new BundleAnalyzerPlugin({
         // analyzerPort: isModernBuild ? '8888' : '9999'
       }),
   ].filter(Boolean),
