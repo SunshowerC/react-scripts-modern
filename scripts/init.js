@@ -97,6 +97,7 @@ module.exports = function(
   appPackage.scripts = {
     start: 'react-scripts start',
     build: 'react-scripts build',
+    'build:modern': 'react-scripts build --modern --analysis',
     analysis: 'react-scripts build --analysis',
     test: 'react-scripts test',
     eject: 'react-scripts eject',
