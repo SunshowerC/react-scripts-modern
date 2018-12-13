@@ -75,13 +75,13 @@ class ModuleHtmlPlugin {
           }
         )
 
-        this.dynamicInsert && this.dynamicInsertScript()
+        this.dynamicInsert && this.dynamicInsertScript(id, compilation)
 
 
     })
   }
 
-  dynamicInsertScript() {
+  dynamicInsertScript(id , compilation) {
     // 如果不需要 动态嵌入代码，直接使用 type=module和 nomodule，以下代码可去除
     this.htmlWebpackPlugin
       .getHooks(compilation)
@@ -105,12 +105,14 @@ class ModuleHtmlPlugin {
       .getHooks(compilation)
       .afterTemplateExecution
       .tap(id, (data, cb) => {
+        let targetTags = data.plugin.options.inject === 'head' ? 'headTags' : 'bodyTags'
+
         // 将文件名列表 作为变量值 嵌入到 内联script 标签
         var morderScriptStr = JSON.stringify( 
-          data.bodyTags.map(item=> item.attributes && item.attributes.src && item.attributes.type === 'module' ? {src: item.attributes.src} : null).filter((item)=> item && !item.src.includes('runtime'))
+          data[targetTags].map(item=> item.attributes && item.attributes.src && item.attributes.type === 'module' ? {src: item.attributes.src} : null).filter((item)=> item && !item.src.includes('runtime'))
         )
         var legacyScriptStr = JSON.stringify(
-          data.bodyTags.map(item=> item.attributes && item.attributes.src && item.attributes.nomodule ? {src: item.attributes.src} : null).filter((item)=> item && !item.src.includes('runtime'))
+          data[targetTags].map(item=> item.attributes && item.attributes.src && item.attributes.nomodule ? {src: item.attributes.src} : null).filter((item)=> item && !item.src.includes('runtime'))
         )
 
         if (morderScriptStr !== '[]') {
@@ -124,9 +126,10 @@ class ModuleHtmlPlugin {
 
 
         // 使用动态插入 script 标签后， 移除 type=module 和 nomodule 的标签
-        data.bodyTags = data.bodyTags.filter(item => {
-          // 如果没有 attributes（内联脚本） ， 或者 src 是 runtime, 将不过滤
+        data[targetTags] = data[targetTags].filter(item => {
+          // 如果没有 attributes, attributes.src（内联脚本） ， 或者 src 是 runtime, 将不过滤
           return !item.attributes || 
+                !item.attributes.src ||
                 item.attributes.src.includes('runtime') || 
                 (item.attributes.type !== 'module' && !item.attributes.nomodule)
  
