@@ -61,6 +61,9 @@ class ModuleHtmlPlugin {
 
             // 在这一步加上 10.3 的 fix，很简单，就是往资源的数组里面的 push 一个资源对象
             if (this.isModule) {
+              // 移除 modern 的 style 外链，避免重复的 css
+              data.assetTags.styles = []
+
               // inject Safari 10 nomdoule fix
               data.assetTags.scripts.unshift({
                 tagName: 'script',

@@ -543,8 +543,8 @@ return {
     // Generates an `index.html` file with the <script> injected.
     new HtmlWebpackPlugin({
       inject: MODERN_MODE ? 'head' : true,
-      // 如果存在 paths.buildHtml , 那就代表此次构建是 第二次构建
-      template: fs.existsSync(paths.buildHtml) ? paths.buildHtml : paths.appHtml,
+      // 如果是 第二次构建, 就使用 paths.buildHtml 作为模板
+      template: !isModernBuild ? paths.buildHtml : paths.appHtml,
       minify: {
         removeComments: true,
         collapseWhitespace: true,
