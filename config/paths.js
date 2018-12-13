@@ -80,6 +80,7 @@ module.exports = {
   appBuild: resolveApp('build'),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
+  buildHtml: resolveApp('build/index.html'),
   appIndexJs: resolveModule(resolveApp, 'src/index'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),

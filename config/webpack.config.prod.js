@@ -29,14 +29,18 @@ const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt');
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
+
+const HtmlWepackEsmodulesPlugin = require('./html-webpack-esmodules-plugin')
+
+
 // @remove-on-eject-begin
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 // @remove-on-eject-end
 
 // 是不是 本地构建分析
 const isBuddleAnalysis = process.argv.some(item => item === '--analysis')
-// 是不是 Modern build
-const isModernBuild = process.argv.some(item => item === '--modern')
+// 是不是 Modern 模式
+const MODERN_MODE = process.argv.some(item => item === '--modern')
 
 
 // Webpack uses `publicPath` to determine where the app is being served from.
@@ -128,6 +132,16 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
 };
 
 
+
+// This is the production configuration.
+// It compiles slowly and is focused on producing a fast and minimal bundle.
+// The development configuration is different and lives in a separate file.
+/**  
+ * 动态生成 webpack 配置 
+ * @params {boolean} isModernBuild 当前 构建是否是 modern build
+ */
+module.exports = (isModernBuild) => {
+
 let presetEnvOption = isModernBuild ? {
   targets: {
     esmodules: true,
@@ -138,10 +152,7 @@ let presetEnvOption = isModernBuild ? {
   "useBuiltIns": "usage",
 }
 
-// This is the production configuration.
-// It compiles slowly and is focused on producing a fast and minimal bundle.
-// The development configuration is different and lives in a separate file.
-module.exports = {
+return {
   mode: 'production',
   // Don't attempt to continue if there are any errors.
   bail: true,
@@ -156,8 +167,8 @@ module.exports = {
     // Generated JS file names (with nested folders).
     // There will be one main bundle, and one file per asynchronous chunk.
     // We don't currently advertise code splitting but Webpack supports it.
-    filename: 'static/js/[name].[chunkhash:8].js',
-    chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js',
+    filename: isModernBuild ? 'static/js/[name].[chunkhash:8].js' : 'static/js/[name]-legacy.[chunkhash:8].js',
+    chunkFilename:  isModernBuild ? 'static/js/[name].[chunkhash:8].chunk.js' : 'static/js/[name]-legacy.[chunkhash:8].chunk.js',
     // We inferred the "public path" (such as / or /my-project) from homepage.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -531,8 +542,9 @@ module.exports = {
   plugins: [
     // Generates an `index.html` file with the <script> injected.
     new HtmlWebpackPlugin({
-      inject: true,
-      template: paths.appHtml,
+      inject: MODERN_MODE ? 'head' : true,
+      // 如果存在 paths.buildHtml , 那就代表此次构建是 第二次构建
+      template: fs.existsSync(paths.buildHtml) ? paths.buildHtml : paths.appHtml,
       minify: {
         removeComments: true,
         collapseWhitespace: true,
@@ -556,6 +568,11 @@ module.exports = {
     // In production, it will be an empty string unless you specify "homepage"
     // in `package.json`, in which case it will be the pathname of that URL.
     new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
+
+    MODERN_MODE && new HtmlWepackEsmodulesPlugin(HtmlWebpackPlugin, {
+      isModernBuild,
+    }),
+
     // This gives some necessary context to module not found errors, such as
     // the requesting resource.
     new ModuleNotFoundPlugin(paths.appPath),
@@ -563,7 +580,10 @@ module.exports = {
     // if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.
     // It is absolutely essential that NODE_ENV was set to production here.
     // Otherwise React will be compiled in the very slow development mode.
-    new webpack.DefinePlugin(env.stringified),
+    new webpack.DefinePlugin({
+      ...env.stringified,
+      'process.env.isModernBuild': isModernBuild
+    }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
@@ -629,7 +649,7 @@ module.exports = {
       }),
 
       isBuddleAnalysis && new BundleAnalyzerPlugin({
-        // analyzerPort: isModernBuild ? '8888' : '9999'
+        analyzerPort: isModernBuild ? '8888' : '9999'
       }),
   ].filter(Boolean),
   // Some libraries import Node modules but don't use them in the browser.
@@ -644,4 +664,5 @@ module.exports = {
   // Turn off performance processing because we utilize
   // our own hints via the FileSizeReporter
   performance: false,
+}
 };

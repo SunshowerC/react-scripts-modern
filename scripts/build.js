@@ -36,7 +36,6 @@ const chalk = require('chalk');
 const fs = require('fs-extra');
 const webpack = require('webpack');
 const bfj = require('bfj');
-const config = require('../config/webpack.config.prod');
 const paths = require('../config/paths');
 const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles');
 const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
@@ -54,6 +53,15 @@ const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
 const WARN_AFTER_CHUNK_GZIP_SIZE = 1024 * 1024;
 
 const isInteractive = process.stdout.isTTY;
+
+const MODERN_MODE = process.argv.some(item => item === '--modern')
+
+const config = require('../config/webpack.config.prod')(false);
+let modernConfig = null
+
+if(MODERN_MODE) {
+  modernConfig = require('../config/webpack.config.prod')(true)
+}
 
 // Warn and crash if required files are missing
 if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
@@ -79,8 +87,13 @@ checkBrowsers(paths.appPath, isInteractive)
     fs.emptyDirSync(paths.appBuild);
     // Merge with the public folder
     copyPublicFolder();
+
+    if(modernConfig) {
+      await build(previousFileSizes, modernConfig)
+    }
+
     // Start the webpack build
-    return build(previousFileSizes);
+    return build(previousFileSizes, config);
   })
   .then(
     ({ stats, previousFileSizes, warnings }) => {
@@ -137,10 +150,10 @@ checkBrowsers(paths.appPath, isInteractive)
   });
 
 // Create the production build and print the deployment instructions.
-function build(previousFileSizes) {
+function build(previousFileSizes, webpackConfig) {
   console.log('Creating an optimized production build...');
 
-  let compiler = webpack(config);
+  let compiler = webpack(webpackConfig);
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
       let messages;
