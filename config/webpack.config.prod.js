@@ -64,7 +64,6 @@ const env = getClientEnvironment(publicUrl);
 
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
-
 const PrerenderSPAPlugin = require('prerender-spa-plugin')
 const Renderer = PrerenderSPAPlugin.PuppeteerRenderer
 
@@ -171,8 +170,8 @@ return {
     // Generated JS file names (with nested folders).
     // There will be one main bundle, and one file per asynchronous chunk.
     // We don't currently advertise code splitting but Webpack supports it.
-    filename: isModernBuild ? 'static/js/[name].[chunkhash:8].js' : 'static/js/[name]-legacy.[chunkhash:8].js',
-    chunkFilename:  isModernBuild ? 'static/js/[name].[chunkhash:8].chunk.js' : 'static/js/[name]-legacy.[chunkhash:8].chunk.js',
+    filename: (!MODERN_MODE || isModernBuild) ? 'static/js/[name].[chunkhash:8].js' : 'static/js/[name]-legacy.[chunkhash:8].js',
+    chunkFilename: (!MODERN_MODE || isModernBuild) ? 'static/js/[name].[chunkhash:8].chunk.js' : 'static/js/[name]-legacy.[chunkhash:8].chunk.js',
     // We inferred the "public path" (such as / or /my-project) from homepage.
     publicPath: publicPath,
     // Point sourcemap entries to original disk location (format as URL on Windows)
@@ -548,7 +547,7 @@ return {
     new HtmlWebpackPlugin({
       inject: MODERN_MODE ? 'head' : true,
       // 如果是 第二次构建, 就使用 paths.buildHtml 作为模板
-      template: !isModernBuild ? paths.buildHtml : paths.appHtml,
+      template: (MODERN_MODE && !isModernBuild) ? paths.buildHtml : paths.appHtml,
       minify: {
         removeComments: true,
         collapseWhitespace: true,
@@ -564,10 +563,8 @@ return {
     }),
     // Inlines the webpack runtime script. This script is too small to warrant
     // a network request.
-
     // shouldInlineRuntimeChunk &&
     //   new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime~.+[.]js/]),
-
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
@@ -603,7 +600,6 @@ return {
     //   fileName: 'asset-manifest.json',
     //   publicPath: publicPath,
     // }),
-
     // Moment.js is an extremely popular library that bundles large locale files
     // by default due to how Webpack interprets its code. This is a practical
     // solution that requires the user to opt into importing specific locales.
