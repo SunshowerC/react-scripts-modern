@@ -41,7 +41,8 @@ const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 const isBuddleAnalysis = process.argv.some(item => item === '--analysis')
 // 是不是 Modern 模式
 const MODERN_MODE = process.argv.some(item => item === '--modern')
-
+// 是否 预渲染
+const IS_PRERENDER = process.argv.some(item => item === '--prerender')
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -63,6 +64,9 @@ const env = getClientEnvironment(publicUrl);
 
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
+
+const PrerenderSPAPlugin = require('prerender-spa-plugin')
+const Renderer = PrerenderSPAPlugin.PuppeteerRenderer
 
 // Assert this just to be safe.
 // Development builds of React are slow and not intended for production.
@@ -599,7 +603,7 @@ return {
     //   fileName: 'asset-manifest.json',
     //   publicPath: publicPath,
     // }),
-    
+
     // Moment.js is an extremely popular library that bundles large locale files
     // by default due to how Webpack interprets its code. This is a practical
     // solution that requires the user to opt into importing specific locales.
@@ -654,6 +658,37 @@ return {
       isBuddleAnalysis && new BundleAnalyzerPlugin({
         analyzerPort: isModernBuild ? '8888' : '9999'
       }),
+
+    // 如果 设置了预渲染，且是第二次构建
+    IS_PRERENDER && !isModernBuild && new PrerenderSPAPlugin({
+      // Index.html is in the root directory.
+      staticDir: paths.appBuild,
+      routes: [ '/' ],
+      // Optional minification.
+      minify: {
+        collapseBooleanAttributes: true,
+        collapseWhitespace: true,
+        decodeEntities: true,
+        keepClosingSlash: true,
+        sortAttributes: true
+      },
+
+      renderer: new Renderer({
+        // 触发某个 document 事件后 预渲染
+        // renderAfterDocumentEvent: 'custom-render-trigger',
+
+        // 当 某个元素 被 document。querySelector 捕获到后 预渲染
+        // renderAfterElementExists: 'my-app-element',
+
+        // 几秒后预渲染
+        renderAfterTime: 2500,
+ 
+        injectProperty: '__PRERENDER_INJECTED',
+        inject: {
+          isPrerender: true
+        },
+      })
+    })
   ].filter(Boolean),
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
