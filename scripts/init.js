@@ -168,7 +168,9 @@ module.exports = function(
     args = ['install', '--save', verbose && '--verbose'].filter(e => e);
   }
 
-  const reactDependencies = ['react', 'react-dom', 'react-loadable', 'redux', 'react-redux', 'react-router-dom']
+  const reactDependencies = ['react', 'react-dom', 'react-loadable', 'redux', 'react-redux', 'react-router-dom',
+  '@types/react-loadable' , "@types/react-redux", "@types/react-router-dom"
+]
   args.push(...reactDependencies);
 
   // Install additional template dependencies, if present
@@ -189,16 +191,18 @@ module.exports = function(
   // Install react and react-dom for backward compatibility with old CRA cli
   // which doesn't install react and react-dom along with react-scripts
   // or template is presetend (via --internal-testing-template)
-  if (!isReactInstalled(appPackage) || template) {
+  // 无论如何都重新安装
+  // if (!isReactInstalled(appPackage) || template) {
     console.log(`Installing react and react-dom using ${command}...`);
-    console.log();
+    console.log('arguments is ', args);
+
 
     const proc = spawn.sync(command, args, { stdio: 'inherit' });
     if (proc.status !== 0) {
       console.error(`\`${command} ${args.join(' ')}\` failed`);
       return;
     }
-  }
+  // }
 
   if (useTypeScript) {
     verifyTypeScriptSetup();
