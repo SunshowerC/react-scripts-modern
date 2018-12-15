@@ -99,7 +99,6 @@ module.exports = function(
     build: 'react-scripts build',
     'build:modern': 'react-scripts build --modern',
     analysis: 'react-scripts build --analysis',
-    "prerender": "react-scripts build --prerender",
     test: 'react-scripts test',
     eject: 'react-scripts eject',
   };
