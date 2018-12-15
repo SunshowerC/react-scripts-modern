@@ -168,8 +168,8 @@ module.exports = function(
     args = ['install', '--save', verbose && '--verbose'].filter(e => e);
   }
 
-  const reactDependencies = ['react', 'react-dom', 'react-loadable', 'redux', 'react-redux', 'react-router-dom',
-  '@types/react-loadable' , "@types/react-redux", "@types/react-router-dom"
+  const reactDependencies = ['react', 'react-dom', 'redux', 'react-redux', 'react-router-dom',
+  "@types/react-redux", "@types/react-router-dom"
 ]
   args.push(...reactDependencies);
 
