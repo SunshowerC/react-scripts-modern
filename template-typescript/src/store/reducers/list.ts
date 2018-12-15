@@ -6,7 +6,7 @@ export default (state: State = [], action:any) => {
     case ADD_LIST:
       return [
         ...state,
-        action.payload || parseInt((Math.random() * 10) as any, 10)
+        parseInt(action.payload)
       ]
     default:
       return state
