@@ -4,7 +4,7 @@
 ## 使用
 - 生成工程     
     1. 首先安装 create-react-app 2.x 的版本： `npm i -g create-react-app`
-    2. `create-react-app 工程名 --scripts-version react-scripts-shopee --typescript`, 包管理默认使用  yarn , 如果需要使用 npm , 需要加上 `--use-npm` 参数    
+    2. `create-react-app 工程名 --scripts-version react-scripts-modern --typescript`, 包管理默认使用  yarn , 如果需要使用 npm , 需要加上 `--use-npm` 参数    
 
 - eject 配置        
 `npm run eject`
